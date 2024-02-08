@@ -1,11 +1,8 @@
 from fastapi import FastAPI
-from api.modules.chat import chat_request
+from modules.chat import chat_request
 from pydantic import BaseModel
 
 app = FastAPI()
-
-
-
 
 @app.get("/api/")
 def hello_world():
