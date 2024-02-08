@@ -1,16 +1,17 @@
-# import the OpenAI Python library for calling the OpenAI API
 
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
+import time
+import asyncio
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Example OpenAI Python library request
 MODEL = "gpt-3.5-turbo"
-PROMPT = """
-        Eres un redactor experto en SEO para comercio electrónico que escribe descripciones de productos que obligan a los usuarios a comprarlos. 
+
+PROMPT = """Eres un redactor experto en SEO para comercio electrónico que escribe descripciones de productos que obligan a los usuarios a comprarlos. 
         No te hagas referencia a ti mismo. No expliques lo que estás haciendo.
         A lo largo de todo el texto, utiliza las palabras clave de forma natural, márcalas en negrita y de vez en cuando utiliza sinónimos de esas palabras clave.
         En esta tarea, elaborarás una descripción del producto.
@@ -29,19 +30,33 @@ PROMPT = """
         Conclusión: [Resume aquí la descripción del producto y sus puntos destacados, reafirmando su valor y beneficios para los usuarios.] Call to action 
                   con el tema: “Contáctanos hoy mismo”. [Finaliza la descripción del producto invitando a los lectores a contactarte para obtener más información 
                   sobre el producto así como asesoría post-venta y pre-venta.]
-        Dame la ficha con etiquetas html, pon todo sobre un div y solamente utiliza exactamente 5 etiquetas h3, 5 etiquetas p y todas las petiquetas strong que necesites. No quiero que agregues class
+        Dame la ficha con etiquetas html, pon todo sobre un div y solamente utiliza exactamente 5 etiquetas h3, 5 etiquetas p y todas las petiquetas strong que necesites. No quiero que agregues class"""
 
-        """
-
-def chat_request(request_message: str):
-    historial = []
-    historial.append({"role": "system", "content": PROMPT})
-    historial.append({"role": "user", "content": request_message})
+def chat_request_prompt(product: str, keywords: list):
+    start_time = time.perf_counter()
+    history = [{"role": "system", "content": PROMPT}, {"role": "system", "content": f"""Producto: [{product}], Palabras clave: {[i for i in keywords]}"""}]
     response = client.chat.completions.create(
         model=MODEL,
-        messages=historial,
+        messages=history,
         temperature=0,
     )
     chat_response = response.choices[0].message.content
-    return {"message": chat_response, "status": "success"} #"data": response}
+    end_time = time.perf_counter()
+    print(f"Time: {end_time - start_time}s")
+    return {"message": chat_response, "status": "success", "response_time": end_time - start_time} #"data": response}
 
+
+async def chat_request_chunks(product: str, keywords: list):
+    history = [{"role": "system", "content": PROMPT}, {"role": "system", "content": f"""Producto: [{product}], Palabras clave: {[i for i in keywords]}"""}]
+    
+    response = client.chat.completions.create(
+        model=MODEL,
+        messages=history,
+        temperature=0,
+        stream=True
+    )
+    
+    for chunk in response:
+        if(chunk is not None):
+            await asyncio.sleep(0)    
+            yield chunk.choices[0].delta.content

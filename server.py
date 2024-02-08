@@ -1,19 +1,44 @@
-from fastapi import FastAPI
-from modules.chat import chat_request
+from fastapi import FastAPI, WebSocket
 from pydantic import BaseModel
+import uvicorn
+from modules.chat import *
+from fastapi.middleware.cors import CORSMiddleware
+
 
 app = FastAPI()
 
-@app.get("/api/")
-def hello_world():
-    return {"message": "Hello World"}
+origins = [
+    "https://fast-gpt-gamma.vercel.app",
+    "https://*.vercel.app"
+]
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_headers=["*"],
+    allow_methods=["*"]
+)
 
 class Item(BaseModel):
     message: str
+    keywords: list
     
-@app.post('/api/message')
-def chat(item: Item):
-    print(item)
-    response = chat_request(item.message)    
-    return response
+    
+@app.get("/api")
+def hello():
+    return {"message": "Hello"}
+
+@app.websocket("/api/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_json()
+        message = data.get("message")
+        keywords = data.get("keywords")
+        async for chunk in chat_request_chunks(message, keywords):
+            if(type(chunk) == str):
+                await websocket.send_text(chunk)
+
+if __name__ == "__main__":
+    uvicorn.run() 
