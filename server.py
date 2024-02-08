@@ -1,21 +1,22 @@
-import os
-from flask import Flask, send_from_directory, render_template, redirect
+from fastapi import FastAPI
+from api.modules.chat import chat_request
+from pydantic import BaseModel
 
-app = Flask(__name__)
+app = FastAPI()
 
-port = int(os.environ.get("PORT", 5000))
 
-@app.route('/static/<path:path>')
-def serve_static(path):
-    return send_from_directory('static', path)
 
-@app.route('/')
-def home():
-   return render_template('index.html')
 
-@app.route('/<path:path>')
-def all_routes(path):
-    return redirect('/')
+@app.get("/api/")
+def hello_world():
+    return {"message": "Hello World"}
 
-if __name__ == "__main__":
-    app.run(port=port)
+
+class Item(BaseModel):
+    message: str
+    
+@app.post('/api/message')
+def chat(item: Item):
+    print(item)
+    response = chat_request(item.message)    
+    return response
