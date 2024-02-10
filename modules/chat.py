@@ -11,9 +11,9 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Example OpenAI Python library request
 MODEL = "gpt-3.5-turbo"
 
-PROMPT = """Eres un redactor experto en SEO para comercio electrónico que escribe descripciones de productos que obligan a los usuarios a comprarlos. 
+PROMPT =  """Eres un redactor experto en SEO para comercio electrónico que escribe descripciones de productos que obligan a los usuarios a comprarlos. 
         No te hagas referencia a ti mismo. No expliques lo que estás haciendo.
-        A lo largo de todo el texto, utiliza las palabras clave de forma natural, márcalas en negrita y de vez en cuando utiliza sinónimos de esas palabras clave.
+        A lo largo de todo el texto, utiliza las palabras clave de forma natural, y márca las mismas palabras en negrita; de vez en cuando utiliza sinónimos de esas palabras clave.
         En esta tarea, elaborarás una descripción del producto.
         La descripción del producto debe ser informativa y atractiva, con un recuento de palabras no inferior a 1000 palabras. Su objetivo es utilizar un 
                   lenguaje emocional y un razonamiento creativo para persuadir a los compradores potenciales a comprar el producto. La descripción del 
